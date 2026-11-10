@@ -1,0 +1,9 @@
+{
+  "name": "We'll Be ― 家族とAIがそばにいる通院支援アプリ",
+  "short_name": "We'll Be",
+  "description": "近畿大学病院 通院支援アプリ アイデアコンテスト2026 モックアップ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F4F4F4",
+  "theme_color": "#F39800"
+}

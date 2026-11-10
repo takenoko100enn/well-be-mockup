@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>We'll Be 別紙</title>
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  :root {
+    --orange: #F39800;
+    --orange-d: #E07B00;
+    --orange-l: #FFF3E0;
+    --ink: #333;
+    --sub: #666;
+    --line: #DDD;
+    --bg: #F4F4F4;
+    --family: #D9607E;
+    --family-l: #FCEBF0;
+    --ai: #2B8A96;
+    --ai-l: #E3F4F6;
+    --auto: #F39800;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Yu Gothic UI", "Yu Gothic", "Meiryo", sans-serif; color: var(--ink); background: #fff; }
+  .page {
+    width: 297mm; height: 210mm; padding: 9mm 11mm 7mm; position: relative;
+    page-break-after: always; overflow: hidden; display: flex; flex-direction: column;
+  }
+  .page:last-child { page-break-after: auto; }
+  .page-head { display: flex; align-items: baseline; gap: 14px; border-bottom: 3px solid var(--orange); padding-bottom: 6px; margin-bottom: 10px; }
+  .page-head .tag { background: var(--orange); color: #fff; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 3px; }
+  .page-head h1 { font-size: 21px; }
+  .page-head h2 { font-size: 19px; }
+  .page-head .lead { font-size: 12.5px; color: var(--sub); margin-left: auto; }
+  .foot { position: absolute; left: 11mm; right: 11mm; bottom: 4mm; font-size: 10px; color: #999; display: flex; justify-content: space-between; }
+
+  /* ---------- page 1: flow ---------- */
+  .axes { display: flex; gap: 10px; margin-bottom: 10px; }
+  .axis { flex: 1; border-radius: 8px; padding: 8px 12px; font-size: 12px; line-height: 1.5; }
+  .axis b { display: block; font-size: 14.5px; margin-bottom: 2px; }
+  .axis .wall { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 10px; background: #fff; margin-bottom: 3px; }
+  .ax1 { background: var(--family-l); border-left: 6px solid var(--family); }
+  .ax1 b, .ax1 .wall { color: var(--family); }
+  .ax2 { background: var(--ai-l); border-left: 6px solid var(--ai); }
+  .ax2 b, .ax2 .wall { color: var(--ai); }
+  .ax3 { background: var(--orange-l); border-left: 6px solid var(--auto); }
+  .ax3 b, .ax3 .wall { color: var(--orange-d); }
+
+  .flow { display: grid; grid-template-columns: 78px repeat(6, 1fr); grid-template-rows: auto 1fr 1fr 1fr; gap: 5px; flex: 1; }
+  .flow .stage {
+    background: var(--orange); color: #fff; font-weight: 700; font-size: 13px; text-align: center;
+    padding: 7px 4px; position: relative; clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);
+  }
+  .flow .stage:nth-child(2) { clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%); }
+  .flow .corner { }
+  .flow .who { display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 700; font-size: 13px; border-radius: 6px; color: #fff; line-height: 1.3; }
+  .who.me { background: #777; }
+  .who.ai { background: var(--ai); }
+  .who.fam { background: var(--family); }
+  .cell { border-radius: 6px; padding: 8px 9px; font-size: 12.5px; line-height: 1.5; border: 1px solid var(--line); background: #fff; }
+  .cell.ai { background: var(--ai-l); border-color: #BFE2E6; }
+  .cell.fam { background: var(--family-l); border-color: #F3C9D4; }
+  .cell .hl { font-weight: 700; }
+  .cell .ex { display: block; margin-top: 3px; color: var(--sub); font-size: 10.5px; }
+  .cell.none { background: repeating-linear-gradient(45deg, #fafafa, #fafafa 6px, #f3f3f3 6px, #f3f3f3 12px); color: #aaa; text-align: center; display: flex; align-items: center; justify-content: center; }
+  .pill { display: inline-block; font-size: 9.5px; font-weight: 700; color: #fff; border-radius: 8px; padding: 0 6px; margin-right: 3px; vertical-align: 1px; }
+  .pill.p1 { background: var(--family); }
+  .pill.p2 { background: var(--ai); }
+  .pill.p3 { background: var(--auto); }
+  .point { margin-top: 8px; font-size: 12px; background: #FAFAFA; border: 1px dashed #CCC; border-radius: 6px; padding: 6px 12px; line-height: 1.6; }
+  .point b { color: var(--orange-d); }
+
+  /* ---------- phones ---------- */
+  .phones { display: flex; justify-content: space-around; align-items: flex-start; flex: 1; }
+  .unit { width: 262px; display: flex; flex-direction: column; align-items: center; zoom: 1.15; }
+  .cap { margin-top: 9px; width: 100%; font-size: 11.5px; line-height: 1.55; }
+  .cap .t { font-size: 14px; font-weight: 700; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+  .cap .num { display: inline-flex; width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 12px; align-items: center; justify-content: center; }
+
+  .phone { width: 236px; height: 462px; border-radius: 26px; background: #1d1d1d; padding: 8px; box-shadow: 0 3px 10px rgba(0,0,0,.18); }
+  .screen { width: 100%; height: 100%; border-radius: 19px; overflow: hidden; background: var(--bg); display: flex; flex-direction: column; position: relative; }
+  .status { height: 20px; background: var(--orange-d); color: #fff; font-size: 9.5px; display: flex; justify-content: space-between; align-items: center; padding: 0 14px; flex-shrink: 0; }
+  .appbar { height: 34px; background: var(--orange); color: #fff; display: flex; align-items: center; justify-content: center; position: relative; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+  .appbar svg { position: absolute; left: 10px; top: 8px; }
+  .appbar.ai { background: var(--ai); }
+  .appbar.fam { background: var(--family); }
+  .status.ai { background: #237580; }
+  .status.fam { background: #C14E6B; }
+  .body { flex: 1; overflow: hidden; padding: 8px; display: flex; flex-direction: column; gap: 7px; font-size: 10.5px; line-height: 1.5; }
+  .card { background: #fff; border-radius: 7px; padding: 8px 9px; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .card h4 { font-size: 11px; margin-bottom: 3px; }
+  .muted { color: var(--sub); font-size: 9.5px; }
+  .btn { border-radius: 18px; text-align: center; font-weight: 700; padding: 7px 4px; font-size: 11px; }
+  .btn.pri { background: var(--orange); color: #fff; }
+  .btn.ai { background: var(--ai); color: #fff; }
+  .btn.fam { background: var(--family); color: #fff; }
+  .btn.out { border: 1.5px solid var(--orange); color: var(--orange-d); background: #fff; }
+  .btn.out.ai { border-color: var(--ai); color: var(--ai); background: #fff; }
+  .newbadge { display: inline-block; background: #E53935; color: #fff; font-size: 8px; font-weight: 700; border-radius: 6px; padding: 0 4px; margin-left: 3px; vertical-align: 1px; }
+
+  /* home */
+  .tabs { display: flex; background: var(--orange); color: #fff; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+  .tabs div { flex: 1; text-align: center; padding: 6px 0 5px; }
+  .tabs .on { border-bottom: 3px solid #fff; }
+  .idcard { background: #fff; border-radius: 7px; padding: 8px 10px; box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+  .idcard .hosp { display: inline-block; background: #1B3F7A; color: #fff; font-size: 9.5px; font-weight: 700; padding: 1px 7px; margin-bottom: 3px; }
+  .idcard .name { font-size: 15px; font-weight: 700; }
+  .idcard .no { color: var(--orange-d); font-weight: 700; font-size: 12px; }
+  .aibtn { background: var(--ai); color: #fff; border-radius: 10px; padding: 9px 10px; display: flex; align-items: center; gap: 9px; box-shadow: 0 0 0 3px #BFE2E6; }
+  .aibtn .mic { width: 34px; height: 34px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .aibtn b { font-size: 12.5px; display: block; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 4px; background: #fff; border-radius: 7px; padding: 8px 4px; }
+  .gi { text-align: center; font-size: 9px; line-height: 1.3; position: relative; }
+  .gi .ic { width: 28px; height: 28px; margin: 0 auto 2px; border-radius: 8px; background: var(--orange); color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .gi.new .ic { background: var(--ai); }
+  .gi.new.fam .ic { background: var(--family); }
+  .gi.new .newbadge { position: absolute; top: -3px; right: 6px; }
+
+  /* chat */
+  .chat { display: flex; flex-direction: column; gap: 6px; }
+  .msg { max-width: 86%; padding: 6px 9px; border-radius: 12px; font-size: 10.5px; line-height: 1.5; }
+  .msg.ai { background: #fff; border: 1px solid #CFE7EA; border-top-left-radius: 3px; align-self: flex-start; }
+  .msg.me { background: var(--ai); color: #fff; border-top-right-radius: 3px; align-self: flex-end; }
+  .msg .who { font-size: 8.5px; font-weight: 700; color: var(--ai); display: block; }
+  .rec { background: var(--ai-l); border: 1px dashed var(--ai); border-radius: 7px; padding: 5px 8px; font-size: 10px; }
+  .rec b { color: var(--ai); }
+  .talkbar { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 3px; padding-top: 4px; }
+  .bigmic { width: 50px; height: 50px; border-radius: 50%; background: var(--ai); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 6px var(--ai-l); }
+
+  /* memo */
+  .memo-li { display: flex; gap: 6px; padding: 4px 0; border-bottom: 1px solid #EEE; }
+  .memo-li:last-child { border-bottom: none; }
+  .memo-li .d { color: var(--ai); font-weight: 700; flex-shrink: 0; width: 46px; }
+
+  /* checklist */
+  .chk { display: flex; align-items: flex-start; gap: 7px; padding: 5px 0; border-bottom: 1px solid #EEE; }
+  .chk:last-child { border-bottom: none; }
+  .box { width: 16px; height: 16px; border-radius: 4px; border: 2px solid #BBB; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; }
+  .box.on { background: var(--orange); border-color: var(--orange); }
+  .chk.warn { background: #FFF8E6; margin: 0 -9px; padding: 5px 9px; }
+  .notify { background: #fff; border-radius: 9px; padding: 6px 8px; font-size: 9.5px; box-shadow: 0 2px 6px rgba(0,0,0,.15); border-left: 4px solid var(--family); }
+  .notify b { color: var(--family); }
+
+  /* reservation */
+  .who-card { background: var(--orange); color: #fff; padding: 6px 10px 8px; display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .who-card .n { font-size: 13px; font-weight: 700; line-height: 1.2; }
+  .who-card .h { font-size: 9px; }
+  .toggle { width: 34px; height: 19px; border-radius: 10px; background: var(--orange); position: relative; flex-shrink: 0; }
+  .toggle::after { content: ""; position: absolute; right: 2px; top: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; }
+  .omakase { border: 2px solid var(--orange); background: var(--orange-l); border-radius: 8px; padding: 8px 9px; }
+  .omakase .row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .omakase .row b { font-size: 12px; color: var(--orange-d); }
+  .step { display: flex; gap: 6px; align-items: baseline; }
+  .step .s { width: 15px; height: 15px; border-radius: 50%; background: #999; color: #fff; font-size: 9px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  /* family timeline */
+  .tl { position: relative; padding-left: 16px; }
+  .tl::before { content: ""; position: absolute; left: 5px; top: 5px; bottom: 5px; width: 2px; background: #E5C2CC; }
+  .tli { position: relative; padding: 3px 0; font-size: 10px; }
+  .tli::before { content: ""; position: absolute; left: -15px; top: 7px; width: 10px; height: 10px; border-radius: 50%; background: var(--family); }
+  .tli.now::before { background: #fff; border: 3px solid var(--family); width: 8px; height: 8px; box-shadow: 0 0 0 3px var(--family-l); }
+  .tli.todo { color: #aaa; }
+  .tli.todo::before { background: #ddd; }
+  .tli .tm { font-weight: 700; display: inline-block; width: 34px; }
+  .tli.now .st { color: var(--family); font-weight: 700; }
+  /* med */
+  .medrow { display: flex; align-items: center; gap: 7px; padding: 5px 0; border-bottom: 1px solid #EEE; }
+  .medrow:last-child { border-bottom: none; }
+  .medrow .tt { width: 22px; font-weight: 700; }
+  .medrow .st { margin-left: auto; font-size: 9.5px; font-weight: 700; }
+  .done { color: var(--ai); }
+  .wait { color: var(--orange-d); }
+  .dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .dot.on { background: var(--ai); }
+  .dot.off { border: 2px solid var(--orange); }
+  .linknote { font-size: 9px; color: var(--ai); background: var(--ai-l); border-radius: 5px; padding: 3px 7px; }
+  .medbtn { display: flex; gap: 6px; }
+  .medbtn .btn { flex: 1; }
+
+  /* alert */
+  .alert { background: #FDECEC; border: 1.5px solid #E05252; border-radius: 7px; padding: 5px 8px; font-size: 9.5px; }
+  .alert b { color: #C62828; }
+  .alert .r { display: flex; gap: 5px; margin-top: 4px; }
+  .alert .r div { flex: 1; text-align: center; border-radius: 12px; padding: 3px 0; font-weight: 700; font-size: 9.5px; }
+  .alert .call1 { background: #fff; color: #C62828; border: 1px solid #E05252; }
+  .alert .call2 { background: #E05252; color: #fff; }
+
+  /* invite */
+  .code { display: flex; gap: 4px; justify-content: center; margin: 4px 0; }
+  .code span { width: 26px; height: 32px; border: 1.5px solid var(--family); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: var(--family); background: #fff; }
+  .can { display: flex; gap: 5px; align-items: baseline; padding: 2px 0; }
+  .can::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--family); flex-shrink: 0; transform: translateY(-1px); }
+
+  /* flow box on page 4 */
+  .howto { width: 262px; zoom: 1.15; align-self: center; }
+  .howto h3 { font-size: 15px; color: var(--family); margin-bottom: 8px; }
+  .hstep { display: flex; gap: 9px; margin-bottom: 10px; font-size: 11.5px; line-height: 1.55; }
+  .hstep .n { width: 24px; height: 24px; border-radius: 50%; background: var(--family); color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .hstep b { display: block; font-size: 12.5px; }
+  .hnote { font-size: 10.5px; line-height: 1.6; background: var(--family-l); border-radius: 6px; padding: 7px 10px; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ================= PAGE 1 ================= -->
+<section class="page">
+  <div class="page-head">
+    <span class="tag">別紙</span>
+    <h1>We'll Be ― 家族とAIがそばにいる通院</h1>
+    <span class="lead">通院の流れの中で、本人・AI・家族がどう関わるか</span>
+  </div>
+
+  <div class="axes">
+    <div class="axis ax1"><span class="wall">登録の壁に</span><b>軸1　見守り家族</b>本人が来院した日に招待コードを発行。離れて暮らす家族も病院に来ずに登録でき、受付や進み具合の確認を一緒にできる。</div>
+    <div class="axis ax2"><span class="wall">継続の壁・操作の壁に</span><b>軸2　AI通院コンシェルジュ</b>毎日の薬の確認をきっかけに話しかける習慣をつくる。症状をその場で記録し、診察前のメモや持ち物のリマインドまで行う。</div>
+    <div class="axis ax3"><span class="wall">操作の壁に</span><b>軸3　おまかせ受付</b>前日の通知で一度押すだけで、当日は自動で「どこでも受付」が済む。次回からも毎回自動にできる。</div>
+  </div>
+
+  <div class="flow">
+    <div class="corner"></div>
+    <div class="stage">ふだん（自宅）</div>
+    <div class="stage">受診の数日前</div>
+    <div class="stage">前日</div>
+    <div class="stage">当日の朝</div>
+    <div class="stage">院内・診察</div>
+    <div class="stage">帰宅後</div>
+
+    <div class="who me">本人</div>
+    <div class="cell">薬を飲んだら<span class="hl">「飲んだよ」と話す</span>。症状が出たら<span class="hl">その場でAIに話す</span><span class="ex">「今、胸がどきどきしてる」</span></div>
+    <div class="cell"><span class="hl">まとめを確認</span>して、聞きたいことを追加する。持ち物をカバンに入れて「用意できた」</div>
+    <div class="cell">通知から<span class="hl">「明日の受付をしておく」</span>を押す</div>
+    <div class="cell">出かける前に持ち物をもう一度確認</div>
+    <div class="cell">まもなくコールまで自由に過ごす。<span class="hl">診察でメモを先生に見せる</span></div>
+    <div class="cell">まとめを見て、次の予約と薬を確認</div>
+
+    <div class="who ai">AI<br>コンシェルジュ</div>
+    <div class="cell ai"><span class="pill p2">軸2</span>処方歴をもとに<span class="hl">薬の時間を知らせる</span>。症状は<span class="hl">時刻と状況をつけて記録</span></div>
+    <div class="cell ai"><span class="pill p2">軸2</span>症状の記録と飲み忘れの回数から<span class="hl">「前回から気になったこと」</span>をまとめる。持ち物を知らせる<span class="ex">例：採血の検査結果の紙</span></div>
+    <div class="cell ai"><span class="pill p2">軸2</span>その人専用の持ち物リストと明日の流れを案内</div>
+    <div class="cell ai"><span class="pill p3">軸3</span><span class="hl">自動で受付</span>（おまかせ受付）</div>
+    <div class="cell ai"><span class="pill p2">軸2</span>まもなくコールと行き先を、わかりやすい言葉で知らせる</div>
+    <div class="cell ai"><span class="pill p2">軸2</span>次の予約・薬の日数・先生に言われたこと・<span class="hl">次回の持ち物</span>をまとめる</div>
+
+    <div class="who fam">家族</div>
+    <div class="cell fam"><span class="pill p1">軸1</span><span class="hl">飲み忘れが続いたら</span>知らせが届く。本人が共有を選べば体調の記録も見られる</div>
+    <div class="cell none">―</div>
+    <div class="cell fam"><span class="pill p1">軸1</span>持ち物の準備がまだなら<span class="hl">「声かけをお願いします」</span>と届く</div>
+    <div class="cell fam"><span class="pill p1">軸1</span>「受付が済みました」と届く。家族が代わりに受付することもできる</div>
+    <div class="cell fam"><span class="pill p1">軸1</span>離れた場所から<span class="hl">進み具合を確認</span></div>
+    <div class="cell fam"><span class="pill p1">軸1</span>まとめが届く。ひとことメッセージを送る</div>
+  </div>
+
+  <div class="point">
+    <b>ポイント</b>　通院は月1回でも、薬は毎日飲みます。<b>毎日の薬をきっかけに</b>、アプリを「通院する日だけ使うもの」から「ふだんからそばにいるもの」に変えます。本人が操作できない場面は、AIの自動化と家族が補います。
+  </div>
+
+  <div class="foot"><span>チーム We'll Be / 近畿大学病院 通院支援アプリ アイデアコンテスト2026</span><span>別紙 1 / 4</span></div>
+</section>
+
+<!-- ================= PAGE 2 ================= -->
+<section class="page">
+  <div class="page-head">
+    <span class="tag">別紙</span>
+    <h2>画面イメージ（1）ふだんの暮らしの中で</h2>
+    <span class="lead">※イメージ</span>
+  </div>
+
+  <div class="phones">
+    <!-- home -->
+    <div class="unit">
+      <div class="phone"><div class="screen">
+        <div class="status"><span>9:12</span><span>●●● 100%</span></div>
+        <div class="tabs"><div class="on">診察券</div><div>メッセージ</div></div>
+        <div class="body">
+          <div class="idcard">
+            <span class="hosp">近畿大学病院</span>
+            <div class="muted">キンダイ タロウ</div>
+            <div class="name">近大　太郎</div>
+            <div class="muted">診察券番号</div>
+            <div class="no">0000000000</div>
+          </div>
+          <div class="aibtn">
+            <div class="mic"><svg width="16" height="20" viewBox="0 0 16 20"><rect x="4" y="0" width="8" height="13" rx="4" fill="#2B8A96"/><path d="M1 9a7 7 0 0 0 14 0" stroke="#2B8A96" stroke-width="2" fill="none"/><rect x="7" y="16" width="2" height="4" fill="#2B8A96"/></svg></div>
+            <div><b>AIコンシェルジュに話しかける</b><span style="font-size:9.5px">「薬を飲んだよ」「体調を話したい」</span></div>
+          </div>
+          <div class="grid">
+            <div class="gi new"><div class="ic">薬</div>お薬<span class="newbadge">NEW</span></div>
+            <div class="gi new"><div class="ic">帳</div>通院手帳<span class="newbadge">NEW</span></div>
+            <div class="gi new"><div class="ic">✓</div>持ち物<span class="newbadge">NEW</span></div>
+            <div class="gi"><div class="ic">予</div>予約情報</div>
+            <div class="gi"><div class="ic">待</div>診察状況</div>
+            <div class="gi new fam"><div class="ic">家</div>見守り家族<span class="newbadge">NEW</span></div>
+            <div class="gi"><div class="ic">i</div>フロアマップ</div>
+            <div class="gi"><div class="ic">交</div>交通案内</div>
+            <div class="gi"><div class="ic">¥</div>会計状況</div>
+          </div>
+        </div>
+      </div></div>
+      <div class="cap">
+        <div class="t"><span class="num">1</span>ホーム画面</div>
+        今のホーム画面に<b>「AIコンシェルジュに話しかける」ボタン</b>と、お薬・通院手帳・持ち物・見守り家族を足します。今の使い方は変えずに機能を増やせます。
+      </div>
+    </div>
+
+    <!-- med -->
+    <div class="unit">
+      <div class="phone"><div class="screen">
+        <div class="status ai"><span>20:02</span><span>●●● 76%</span></div>
+        <div class="appbar ai"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M9 2L1 9h2.5v7h4v-5h3v5h4V9H17z" fill="#fff"/></svg>お薬</div>
+        <div class="body">
+          <div class="card">
+            <h4>今日のお薬</h4>
+            <div class="medrow"><div class="dot on"><svg width="9" height="7" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="2" fill="none"/></svg></div><span class="tt">朝</span>2種類<span class="st done">飲んだ</span></div>
+            <div class="medrow"><div class="dot on"><svg width="9" height="7" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="2" fill="none"/></svg></div><span class="tt">昼</span>1種類<span class="st done">飲んだ</span></div>
+            <div class="medrow"><div class="dot off"></div><span class="tt">夜</span>1種類<span class="st wait">今の時間です</span></div>
+          </div>
+          <div class="chat">
+            <div class="msg ai"><span class="who">AIコンシェルジュ</span>夜のお薬の時間です。</div>
+            <div class="msg me">飲んだよ。そういえば今朝、ちょっとふらついた。</div>
+            <div class="msg ai"><span class="who">AIコンシェルジュ</span>ふらつきも記録しました。次の診察で伝えられるようにしますね。</div>
+          </div>
+          <div class="linknote">処方歴から自動で登録／残り7日分</div>
+          <div class="medbtn"><div class="btn ai">飲んだ</div><div class="btn out ai">あとで</div></div>
+        </div>
+      </div></div>
+      <div class="cap">
+        <div class="t"><span class="num">2</span>服薬サポート</div>
+        今のアプリの<b>処方歴をもとに</b>薬の時間を知らせ、「飲んだよ」と話すだけで記録できます。毎日開くきっかけになり、<b>ついでに体調も話せます</b>。飲み忘れが続けば家族にも知らせます。
+      </div>
+    </div>
+
+    <!-- symptom -->
+    <div class="unit">
+      <div class="phone"><div class="screen">
+        <div class="status ai"><span>14:26</span><span>●●● 58%</span></div>
+        <div class="appbar ai"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M9 2L1 9h2.5v7h4v-5h3v5h4V9H17z" fill="#fff"/></svg>AIコンシェルジュ</div>
+        <div class="body">
+          <div class="chat">
+            <div class="msg me">今、胸がどきどきしてる</div>
+            <div class="msg ai"><span class="who">AIコンシェルジュ</span>14時10分から記録します。強い胸の痛みや息苦しさはありますか？</div>
+            <div class="msg me">それはない。座ってたら急になった</div>
+            <div class="msg ai"><span class="who">AIコンシェルジュ</span>「座っているときに急に」と記録しました。おさまったら教えてください。</div>
+            <div class="msg me">おさまったわ</div>
+          </div>
+          <div class="rec"><b>記録しました</b>　9月23日（水）<br>14:10〜14:25　胸のどきどき<br>座っているときに急に／痛み・息苦しさなし</div>
+          <div class="alert"><b>強い痛みや息苦しさがあるとき</b>は、記録より先に連絡してください
+            <div class="r"><div class="call1">病院に電話</div><div class="call2">119番</div></div>
+          </div>
+        </div>
+      </div></div>
+      <div class="cap">
+        <div class="t"><span class="num">3</span>症状の記録</div>
+        症状が出たとき、<b>その場やおさまった直後</b>に話しておきます。AIが短く聞いて、<b>始まりと終わりの時刻や状況</b>を残します。危ないサインのときは連絡を先に案内します。
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>チーム We'll Be / 近畿大学病院 通院支援アプリ アイデアコンテスト2026</span><span>別紙 2 / 4</span></div>
+</section>
+
+<!-- ================= PAGE 3 ================= -->
+<section class="page">
+  <div class="page-head">
+    <span class="tag">別紙</span>
+    <h2>画面イメージ（2）受診の前後</h2>
+    <span class="lead">※イメージ</span>
+  </div>
+
+  <div class="phones">
+    <!-- memo -->
+    <div class="unit">
+      <div class="phone"><div class="screen">
+        <div class="status ai"><span>10:02</span><span>●●● 64%</span></div>
+        <div class="appbar ai"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M9 2L1 9h2.5v7h4v-5h3v5h4V9H17z" fill="#fff"/></svg>診察前のメモ</div>
+        <div class="body">
+          <div class="card">
+            <div class="muted">次の受診</div>
+            <h4 style="font-size:12.5px">10月1日（木）9:30　内科</h4>
+          </div>
+          <div class="card">
+            <h4 style="color:var(--ai)">前回（9月3日）から気になったこと</h4>
+            <div class="memo-li"><span class="d">9/12 朝</span><span>立ち上がったときにふらついた（1回）</span></div>
+            <div class="memo-li"><span class="d">9/23</span><span>14:10〜14:25 胸のどきどき。座っているときに急に。痛み・息苦しさなし</span></div>
+            <div class="memo-li"><span class="d">お薬</span><span>夜の分の飲み忘れ 2回</span></div>
+          </div>
+          <div class="card">
+            <h4 style="color:var(--ai)">先生に聞きたいこと</h4>
+            <div>夜の薬を飲み忘れやすい。飲む時間を相談したい</div>
+          </div>
+          <div class="btn out ai">＋ 聞きたいことを話して追加</div>
+          <div class="btn ai">診察で先生に見せる（大きな文字で表示）</div>
+          <div class="muted" style="text-align:center">AIが記録からまとめました。内容は直せます。</div>
+        </div>
+      </div></div>
+      <div class="cap">
+        <div class="t"><span class="num">4</span>診察前のメモ</div>
+        受診の数日前に、<b>症状の記録と飲み忘れの回数</b>をAIが「前回から気になったこと」としてまとめます。診察で画面を見せれば、言い忘れを防げます。
+      </div>
+    </div>
+
+    <!-- checklist -->
+    <div class="unit">
+      <div class="phone"><div class="screen">
+        <div class="status"><span>18:00</span><span>●●● 71%</span></div>
+        <div class="appbar"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M9 2L1 9h2.5v7h4v-5h3v5h4V9H17z" fill="#fff"/></svg>持ち物チェック</div>
+        <div class="body">
+          <div class="card" style="background:var(--orange-l)">
+            <div class="muted">明日の受診</div>
+            <h4 style="font-size:12.5px">10月1日（木）9:30　内科</h4>
+          </div>
+          <div class="card">
+            <div class="chk"><div class="box on"><svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="2" fill="none"/></svg></div><div>保険証</div></div>
+            <div class="chk warn"><div class="box"></div><div><b>採血の検査結果の紙</b><br><span class="muted">前回の診察後に「次は検査結果の紙を持ってきてと言われた」と話した内容から登録</span></div></div>
+            <div class="chk"><div class="box on"><svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="2" fill="none"/></svg></div><div>お薬手帳</div></div>
+          </div>
+          <div class="btn pri">カバンに入れた（用意できた）</div>
+          <div class="btn out">紙が見つからない → 写真を撮って保存</div>
+          <div class="muted" style="margin-top:2px">家族のスマホには、こう届きます</div>
+          <div class="notify"><b>見守り家族</b>　18:00<br>お父さんの明日の受診で、まだ用意できていない持ち物があります（採血の検査結果の紙）。声かけをお願いします。</div>
+        </div>
+      </div></div>
+      <div class="cap">
+        <div class="t"><span class="num">5</span>持ち物チェック</div>
+        「次回持ってくるもの」を数日前・前日・当日の朝に知らせます。<b>用意できていなければ家族にも通知</b>が届き、本人と家族の二重で忘れ物を防ぎます。
+      </div>
+    </div>
+
+    <!-- omakase -->
+    <div class="unit">
+      <div class="phone"><div class="screen">
+        <div class="status"><span>15:00</span><span>●●● 58%</span></div>
+        <div class="appbar"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M9 2L1 9h2.5v7h4v-5h3v5h4V9H17z" fill="#fff"/></svg>予約情報</div>
+        <div class="who-card">
+          <div class="avatar"><svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="6" r="4" fill="#bbb"/><path d="M1 18a8 7 0 0 1 16 0z" fill="#bbb"/></svg></div>
+          <div><div class="h">近畿大学病院</div><div class="n">近大　太郎</div></div>
+        </div>
+        <div class="body">
+          <div class="card">
+            <div style="color:var(--orange-d);font-weight:700">2026/10/01　09:30</div>
+            <div>内科</div>
+          </div>
+          <div class="card">
+            <div class="muted">［来院の案内（診察予約）］</div>
+            明日は診察予約があります。予約時間に合わせてご来院ください。
+          </div>
+          <div class="omakase">
+            <div class="row"><b>明日の受付をしておく</b><div class="toggle"></div></div>
+            <div style="margin-top:3px">当日は<b>自動で受付</b>します。家族にもお知らせします。</div>
+            <div style="margin-top:5px;display:flex;gap:5px;align-items:center"><div class="box on" style="width:13px;height:13px"><svg width="8" height="6" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="2" fill="none"/></svg></div><span>次回からも毎回おまかせにする</span></div>
+          </div>
+          <div class="card">
+            <h4>明日の流れ</h4>
+            <div class="step"><span class="s">1</span>総合受付で保険証の確認</div>
+            <div class="step"><span class="s">2</span>採血</div>
+            <div class="step"><span class="s">3</span>内科の診察（まもなくコールでお知らせ）</div>
+          </div>
+        </div>
+      </div></div>
+      <div class="cap">
+        <div class="t"><span class="num">6</span>おまかせ受付</div>
+        今ある前日の予約通知に<b>「明日の受付をしておく」</b>を付けます。一度オンにすれば、当日に自分で操作しなくても受付が済みます。
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>チーム We'll Be / 近畿大学病院 通院支援アプリ アイデアコンテスト2026</span><span>別紙 3 / 4</span></div>
+</section>
+
+<!-- ================= PAGE 4 ================= -->
+<section class="page">
+  <div class="page-head">
+    <span class="tag">別紙</span>
+    <h2>画面イメージ（3）見守り家族</h2>
+    <span class="lead">※イメージ</span>
+  </div>
+
+  <div class="phones">
+    <!-- how to -->
+    <div class="howto">
+      <h3>家族の登録の流れ</h3>
+      <div class="hstep"><span class="n">1</span><div><b>本人が来院した日に同意する</b>窓口やアバター受付で、家族に見守ってもらうことに同意し、招待コードを発行します。スマホを持っていない人には紙で渡します。</div></div>
+      <div class="hstep"><span class="n">2</span><div><b>家族に送る</b>LINEやSMSで家族に送るか、紙を家族に渡します。</div></div>
+      <div class="hstep"><span class="n">3</span><div><b>家族が自分のスマホで登録する</b>アプリに招待コードを入れるだけで登録できます。家族は病院に来る必要がありません。</div></div>
+      <div class="hnote">本人の同意と来院を前提にしているので、本人確認の考え方は今の家族登録と変わりません。家族にどこまで見せるか（体調の記録など）は、本人が選べます。</div>
+    </div>
+
+    <!-- invite -->
+    <div class="unit">
+      <div class="phone"><div class="screen">
+        <div class="status fam"><span>21:40</span><span>●●● 88%</span></div>
+        <div class="appbar fam"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M9 2L1 9h2.5v7h4v-5h3v5h4V9H17z" fill="#fff"/></svg>見守り家族の登録</div>
+        <div class="body">
+          <div class="card">
+            <div class="muted">招待が届いています</div>
+            <h4 style="font-size:12.5px">近大 太郎さん（お父さん）</h4>
+            <div class="muted">近畿大学病院で本人の同意を確認済み</div>
+          </div>
+          <div class="card" style="text-align:center">
+            <div style="font-weight:700">招待コードを入力</div>
+            <div class="code"><span>4</span><span>7</span><span>2</span><span>9</span><span>1</span><span>5</span></div>
+          </div>
+          <div class="card">
+            <h4>登録するとできること</h4>
+            <div class="can">予約の確認と、受付の代わり</div>
+            <div class="can">まもなくコールや進み具合の確認</div>
+            <div class="can">お薬の飲み忘れのお知らせ</div>
+            <div class="can">持ち物の準備のお知らせ</div>
+            <div class="can">体調の記録（本人が共有を選んだ場合）</div>
+          </div>
+          <div class="btn fam">登録する</div>
+        </div>
+      </div></div>
+      <div class="cap">
+        <div class="t"><span class="num">7</span>家族の登録（家族のスマホ）</div>
+        招待コードを入れるだけで登録できます。<b>離れて暮らす家族も、病院に来ずに</b>通院を手伝えるようになります。
+      </div>
+    </div>
+
+    <!-- family -->
+    <div class="unit">
+      <div class="phone"><div class="screen">
+        <div class="status fam"><span>10:05</span><span>●●● 90%</span></div>
+        <div class="appbar fam"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M9 2L1 9h2.5v7h4v-5h3v5h4V9H17z" fill="#fff"/></svg>見守り家族</div>
+        <div class="body">
+          <div class="card">
+            <div class="muted">家族：近大 太郎さん（お父さん）</div>
+            <h4 style="font-size:12.5px">今日の通院　10月1日（木）内科</h4>
+          </div>
+          <div class="card">
+            <div class="tl">
+              <div class="tli"><span class="tm">朝</span>受付済み（おまかせ受付）</div>
+              <div class="tli"><span class="tm">9:05</span>病院に到着</div>
+              <div class="tli"><span class="tm">9:25</span>採血が終わりました</div>
+              <div class="tli now"><span class="tm">10:05</span><span class="st">内科　まもなく診察です</span></div>
+              <div class="tli todo"><span class="tm"></span>会計・お薬</div>
+            </div>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+            <span>持ち物</span><span style="color:var(--family);font-weight:700">すべて用意できました</span>
+          </div>
+          <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+            <span>今週のお薬</span><span style="color:var(--family);font-weight:700">飲み忘れ 1回</span>
+          </div>
+          <div class="btn fam">ひとことメッセージを送る</div>
+          <div class="muted" style="text-align:center">帰宅後に「今日のまとめ」が届きます</div>
+        </div>
+      </div></div>
+      <div class="cap">
+        <div class="t"><span class="num">8</span>見守り家族（家族のスマホ）</div>
+        離れて暮らす家族が、<b>親の通院の進み具合や薬の様子を自分のスマホで確認</b>できます。家族が代わりに受付することもできます。
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>チーム We'll Be / 近畿大学病院 通院支援アプリ アイデアコンテスト2026</span><span>別紙 4 / 4</span></div>
+</section>
+
+</body>
+</html>
