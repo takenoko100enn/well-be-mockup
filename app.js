@@ -16,6 +16,11 @@ function getDefaultState() {
       { time: '前日 18:00', text: '🎒 まだ用意できていない持ち物があります（採血の検査結果の紙）。声かけをお願いします。' }
     ],
     ttsEnabled: true,
+    voiceEngine: 'voicevox', // 'voicevox' | 'browser'
+    voicevoxSpeaker: 2,      // 2: 四国めたん（ノーマル）
+    ttsVoiceName: '',
+    ttsRate: 0.95,
+    ttsPitch: 1.0,
     familyRegistered: true,
     inviteCode: ['4', '7', '2', '9', '1', '5'],
     nightMedTaken: false,
@@ -95,29 +100,106 @@ function resetDemoState() {
   navigateTo('home');
 }
 
-// ==================== AI音声読み上げ（TTS: Web Speech Synthesis） ====================
+// ==================== AI音声読み上げ（TTS: Web Speech Synthesis 改良版） ====================
+let availableVoices = [];
+
+function updateAvailableVoices() {
+  if ('speechSynthesis' in window) {
+    availableVoices = window.speechSynthesis.getVoices();
+  }
+}
+
+if ('speechSynthesis' in window) {
+  updateAvailableVoices();
+  window.speechSynthesis.onvoiceschanged = updateAvailableVoices;
+}
+
+function getBestJapaneseVoice() {
+  if (!('speechSynthesis' in window)) return null;
+  const voices = window.speechSynthesis.getVoices();
+  const jpVoices = voices.filter(v => v.lang && (v.lang.includes('ja') || v.lang.includes('JP')));
+  if (jpVoices.length === 0) return null;
+
+  // ユーザーが明示的に選択した声がある場合
+  if (state.ttsVoiceName) {
+    const chosen = jpVoices.find(v => v.name === state.ttsVoiceName);
+    if (chosen) return chosen;
+  }
+
+  // 音声の品質スコアリング（高音質なNatural/Neural/Online/Google音声を最優先、古いDesktop機械音声を排除）
+  function scoreVoice(v) {
+    const name = v.name.toLowerCase();
+    let score = 0;
+    if (name.includes('natural') || name.includes('neural') || name.includes('online')) score += 100;
+    if (name.includes('nanami')) score += 60;
+    if (name.includes('google')) score += 50;
+    if (name.includes('keita') || name.includes('aoi') || name.includes('shiori')) score += 40;
+    if (name.includes('kyoko') || name.includes('otoya') || name.includes('siri')) score += 30;
+    if (name.includes('ayumi')) score += 10;
+    // 古いSAPIデスクトップ音声（Haruka Desktopなど機械的な声）は減点
+    if (name.includes('desktop')) score -= 50;
+    if (name.includes('haruka') && !name.includes('natural') && !name.includes('online')) score -= 40;
+    if (name.includes('ichiro') && !name.includes('natural') && !name.includes('online')) score -= 40;
+    return score;
+  }
+
+  jpVoices.sort((a, b) => scoreVoice(b) - scoreVoice(a));
+  return jpVoices[0];
+}
+
 function speakAiText(text, forceSpeak = false) {
-  if (!('speechSynthesis' in window)) return;
+  if (!state.ttsEnabled && !forceSpeak) return;
+
+  // 1. VOICEVOX が有効な場合（デフォルト）
+  if ((!state.voiceEngine || state.voiceEngine === 'voicevox') && typeof window.speakVoicevox === 'function') {
+    setSpeakingIndicator(true);
+    window.speakVoicevox(text, state.voicevoxSpeaker || 2, () => {
+      setSpeakingIndicator(true);
+    }, () => {
+      setSpeakingIndicator(false);
+    }).catch(err => {
+      console.warn('VOICEVOX error, fallback to browser speech synthesis:', err);
+      speakBrowserTts(text, forceSpeak);
+    });
+    return;
+  }
+
+  // 2. ブラウザ標準TTS
+  speakBrowserTts(text, forceSpeak);
+}
+
+function speakBrowserTts(text, forceSpeak = false) {
+  if (!('speechSynthesis' in window)) {
+    setSpeakingIndicator(false);
+    return;
+  }
   if (!state.ttsEnabled && !forceSpeak) return;
 
   try {
     window.speechSynthesis.cancel();
-    // 絵文字や記号を読み上げ用にクリーンアップ
-    const cleanText = String(text || '')
-      .replace(/[⚠️📞🚑💊💬📝🎒📅👨‍👩‍👧📷✅]/g, '')
-      .replace(/（.*?）/g, match => match)
+
+    // 自然な発音・滑らかな抑揚のためのクリーンアップ
+    let cleanText = String(text || '')
+      .replace(/[⚠️📞🚑💊💬📝🎒📅👨‍👩‍👧📷✅💡🔄🤖💌👀📱⚙️✨]/g, '')
+      .replace(/\(.*?\)/g, '')
+      .replace(/（.*?）/g, '')
+      .replace(/https?:\/\/\S+/g, '')
+      .replace(/(\d{1,2}):(\d{2})/g, '$1時$2分')
+      .replace(/119番/g, 'ひゃくじゅうきゅうばん')
+      .replace(/…/g, '、')
+      .replace(/~/g, '')
+      .replace(/〜/g, '')
+      .replace(/[「」『』]/g, '')
       .trim();
 
     if (!cleanText) return;
 
     const utter = new SpeechSynthesisUtterance(cleanText);
     utter.lang = 'ja-JP';
-    utter.rate = 1.0; // 高齢者にも聞き取りやすい自然な速度
-    utter.pitch = 1.05;
+    utter.rate = state.ttsRate || 0.95; // 高齢者にも聞き取りやすい自然な速度
+    utter.pitch = state.ttsPitch || 1.0;
 
-    const voices = window.speechSynthesis.getVoices();
-    const jpVoice = voices.find(v => v.lang && v.lang.includes('ja') && (v.name.includes('Google') || v.name.includes('Nanami') || v.name.includes('Kyoko') || v.name.includes('Haruka')))
-                 || voices.find(v => v.lang && v.lang.includes('ja'));
+    const jpVoice = getBestJapaneseVoice();
     if (jpVoice) utter.voice = jpVoice;
 
     utter.onstart = () => {
@@ -138,6 +220,9 @@ function speakAiText(text, forceSpeak = false) {
 }
 
 function stopAiSpeech() {
+  if (typeof window.stopVoicevox === 'function') {
+    window.stopVoicevox();
+  }
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
@@ -1452,13 +1537,27 @@ function closeFamModal() {
   if (modal) modal.style.display = 'none';
 }
 
-// ==================== Gemini API設定モーダル ====================
+// ==================== Gemini API & 音声設定モーダル ====================
 function openAiConfigModal() {
   const currentKey = typeof window.getGeminiApiKey === 'function' ? window.getGeminiApiKey() : '';
   const isConnected = Boolean(currentKey);
 
+  const allVoices = ('speechSynthesis' in window) ? window.speechSynthesis.getVoices() : [];
+  const jpVoices = allVoices.filter(v => v.lang && (v.lang.includes('ja') || v.lang.includes('JP')));
+  const bestVoice = getBestJapaneseVoice();
+  const currentVoiceName = state.ttsVoiceName || (bestVoice ? bestVoice.name : '');
+
+  const voiceOptions = jpVoices.length > 0
+    ? jpVoices.map(v => {
+        const isRec = v.name.includes('Natural') || v.name.includes('Online') || v.name.includes('Google') || v.name.includes('Nanami');
+        const badge = isRec ? ' ★推奨(自然)' : (v.name.includes('Desktop') ? '（機械的）' : '');
+        const isSelected = v.name === currentVoiceName ? 'selected' : '';
+        return `<option value="${escapeHtml(v.name)}" ${isSelected}>${escapeHtml(v.name)}${badge}</option>`;
+      }).join('')
+    : '<option value="">端末の標準日本語音声</option>';
+
   const html = `
-    <h4 style="color:var(--ai);">✨ Gemini API連携設定</h4>
+    <h4 style="color:var(--ai);">✨ AIコンシェルジュ設定（Gemini ＆ 音声）</h4>
     <div class="ai-status-card ${isConnected ? 'active' : ''}" id="modalAiStatusCard">
       ${isConnected ? '🟢 Gemini 1.5 Flash 接続中（リアルタイム対話有効）' : '⚪ APIキー未設定（ルールベース応答で動作中）'}
     </div>
@@ -1479,10 +1578,62 @@ function openAiConfigModal() {
       <button type="button" class="btn out" style="flex:1;" onclick="clearModalApiKey()">消去</button>
     </div>
 
-    <div style="border-top:1px solid #e2e8f0;padding-top:6px;margin-top:4px;">
+    <!-- 音声チューニングセクション（VOICEVOX ＆ ブラウザ音声） -->
+    <div style="border-top:1.5px solid #e2e8f0;padding-top:8px;margin-top:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <h5 style="color:var(--ai);font-size:11.5px;margin:0;">🎙️ AI音声エンジン（VOICEVOX連携）</h5>
+        <span style="background:#e0f2fe;color:#0369a1;font-size:8px;font-weight:700;padding:2px 6px;border-radius:10px;">超自然・人間肉声</span>
+      </div>
+
+      <div style="display:flex;gap:4px;margin-bottom:6px;">
+        <button type="button" class="btn ${(!state.voiceEngine || state.voiceEngine === 'voicevox') ? 'ai' : 'out'}" style="flex:1;font-size:9.5px;padding:5px;" onclick="switchVoiceEngine('voicevox')">
+          ✨ VOICEVOX（おすすめ）
+        </button>
+        <button type="button" class="btn ${state.voiceEngine === 'browser' ? 'ai' : 'out'}" style="flex:1;font-size:9.5px;padding:5px;" onclick="switchVoiceEngine('browser')">
+          標準ブラウザ音声
+        </button>
+      </div>
+
+      <div id="voicevoxConfigArea" style="display:${(!state.voiceEngine || state.voiceEngine === 'voicevox') ? 'block' : 'none'};">
+        <div style="font-weight:700;font-size:9.5px;margin-bottom:2px;">キャラクター・話者を選択：</div>
+        <select id="modalVoicevoxSpeaker" style="width:100%;padding:5px;font-size:9.5px;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:5px;" onchange="updateVoicevoxSpeaker(this.value)">
+          <option value="2" ${(state.voicevoxSpeaker === 2 || !state.voicevoxSpeaker) ? 'selected' : ''}>四国めたん（ノーマル・丁寧で安心感のある声） ★おすすめ</option>
+          <option value="3" ${state.voicevoxSpeaker === 3 ? 'selected' : ''}>ずんだもん（ノーマル・元気で親しみやすい声）</option>
+          <option value="47" ${state.voicevoxSpeaker === 47 ? 'selected' : ''}>ナースロボ＿タイプＴ（医療向けアンドロイド声）</option>
+          <option value="0" ${state.voicevoxSpeaker === 0 ? 'selected' : ''}>四国めたん（あまあま・優しい声）</option>
+        </select>
+        <p class="muted" style="font-size:8px;line-height:1.35;margin-bottom:6px;">
+          💡 クラウドWEB API連携により、完全無料でインストール不要！どこでも高品質なVOICEVOX肉声が再生されます。<br>
+          ※PCにVOICEVOXアプリが起動している場合は自動で最速ローカル通信（遅延0.1秒）に切り替わります。
+        </p>
+      </div>
+
+      <div id="browserTtsConfigArea" style="display:${state.voiceEngine === 'browser' ? 'block' : 'none'};">
+        <div style="font-weight:700;font-size:9.5px;margin-bottom:2px;">ブラウザ音声モデル：</div>
+        <select id="modalVoiceSelect" style="width:100%;padding:5px;font-size:9.5px;border:1px solid #cbd5e1;border-radius:6px;margin-bottom:6px;" onchange="updateModalTtsSettings()">
+          ${voiceOptions}
+        </select>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+          <div style="flex:1;">
+            <div style="font-size:9px;color:var(--sub);margin-bottom:1px;">話す速度: <span id="labelTtsRate">${(state.ttsRate || 0.95).toFixed(2)}x</span></div>
+            <input type="range" id="inputTtsRate" min="0.8" max="1.2" step="0.05" value="${state.ttsRate || 0.95}" style="width:100%;" oninput="updateModalTtsSettings()">
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:9px;color:var(--sub);margin-bottom:1px;">声の高さ: <span id="labelTtsPitch">${(state.ttsPitch || 1.0).toFixed(2)}</span></div>
+            <input type="range" id="inputTtsPitch" min="0.8" max="1.2" step="0.05" value="${state.ttsPitch || 1.0}" style="width:100%;" oninput="updateModalTtsSettings()">
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="btn out" id="btnTestVoice" style="width:100%;padding:6px;font-size:9.5px;margin-bottom:4px;" onclick="testSampleAiVoice()">
+        🔊 この設定で声をテスト再生
+      </button>
+    </div>
+
+    <div style="border-top:1px solid #e2e8f0;padding-top:6px;margin-top:6px;">
       <div class="muted" style="font-size:8.5px;line-height:1.4;">
-        🔒 キーはブラウザ（localStorage）にのみ保存されます。<br>
-        📁 プロンプトは <code>prompt.js</code> を編集することで自由に調整できます。
+        🔒 設定はブラウザ（localStorage）に安全に保存されます。<br>
+        📁 プロンプトは <code>prompt.js</code> で自由に調整できます。
       </div>
     </div>
     <div style="margin-top:6px;">
@@ -1490,6 +1641,46 @@ function openAiConfigModal() {
     </div>
   `;
   showCommonModal(html);
+}
+
+function updateModalTtsSettings() {
+  const sel = document.getElementById('modalVoiceSelect');
+  const rateInput = document.getElementById('inputTtsRate');
+  const pitchInput = document.getElementById('inputTtsPitch');
+  const rateLabel = document.getElementById('labelTtsRate');
+  const pitchLabel = document.getElementById('labelTtsPitch');
+
+  if (sel) state.ttsVoiceName = sel.value;
+  if (rateInput) {
+    state.ttsRate = parseFloat(rateInput.value) || 0.95;
+    if (rateLabel) rateLabel.textContent = `${state.ttsRate.toFixed(2)}x`;
+  }
+  if (pitchInput) {
+    state.ttsPitch = parseFloat(pitchInput.value) || 1.0;
+    if (pitchLabel) pitchLabel.textContent = state.ttsPitch.toFixed(2);
+  }
+  saveState();
+}
+
+function testSampleAiVoice() {
+  updateModalTtsSettings();
+  const btn = document.getElementById('btnTestVoice');
+  if (btn) btn.textContent = '🔊 音声を生成・再生中…';
+  speakAiText('こんにちは、近大太郎さん。いつもそばにいるAIコンシェルジュです。お薬の記録や体調の確認をお手伝いします。', true);
+  setTimeout(() => {
+    if (btn) btn.textContent = '🔊 この設定で声をテスト再生';
+  }, 3000);
+}
+
+function switchVoiceEngine(engine) {
+  state.voiceEngine = engine;
+  saveState();
+  openAiConfigModal();
+}
+
+function updateVoicevoxSpeaker(speakerId) {
+  state.voicevoxSpeaker = parseInt(speakerId, 10) || 2;
+  saveState();
 }
 
 function toggleApiKeyVisibility() {
